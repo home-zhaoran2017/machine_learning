@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from k_means_model_sk import KMeansModel
+from kmeans_model_sk import KMeansModel
 
 data = pd.read_csv("data.txt",sep='|',header=None)
 data = data.iloc[:,:-1].values
