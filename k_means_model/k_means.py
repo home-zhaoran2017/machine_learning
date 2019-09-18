@@ -38,13 +38,13 @@ def kMeans(data, k):
                 clusterChanged = True
             clusterAssment[i,:] = minIndex, minDist**2
 
+        emptyId=[]
         for cent in range(k):
-            emptyId=[]
             ptsInClust = data[clusterAssment[:,0]==cent]
-            if ptsInClust.tolist():
-                centroids[cent,:] = np.mean(ptsInClust, axis=0)
-            else:
+            if ptsInClust.shape[0]==0:
                 emptyId.append(cent)
+            else:
+                centroids[cent,:] = np.mean(ptsInClust, axis=0)
 
         # 处理空簇，随机选择一个簇，随机选择该簇中距离中心最远的前五个样本中的一个加入空簇中
         Id_tmp = []
@@ -62,8 +62,7 @@ def kMeans(data, k):
                     break
 
         end_time = time.time()
-        print("\rStep: %d; Using Time: %.2f s"%(step,end_time-start_time),end='')
-
+        print("\rSTEP: %d; SSE: %.4f; Used Time: %.2f s"%(step,np.sum(clusterAssment[:,1]),end_time-start_time),end='')
 
     clusterAssment = pd.DataFrame(clusterAssment,columns=["clusID","squareDis"])
     clusterAssment["clusID"]=clusterAssment["clusID"].astype(int)
