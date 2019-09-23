@@ -2,6 +2,7 @@ import time
 import numpy as np
 from numpy import random
 from numpy import linalg
+import pandas as pd
 
 
 class GMM():
@@ -38,9 +39,17 @@ class GMM():
         for j,x in enumerate(data):
             for k in range(self.K):
                 alpha=self.ALPHA[k]
-                mu=self.MU[k]
                 sigma=self.SIGMA[k]
-                GAMMA[j,k]=alpha*self._multiNorm(x,mu,sigma)
+               
+                # 处理协方差矩阵奇异的情况，此时随机选择一个样本点的特征值作为该高斯分布的均值，并随机生成一个新的
+                # 协方差矩阵，而 gamma 值不变。
+                if linalg.det(np.mat(sigma)) == 0:
+                    ide = np.random.randint(data.shape[0])
+                    self.MU[k]= data[ide].tolist()
+                    self.SIGMA[k]=np.eye(self.nFeat)*random.random(self.nFeat).tolist()
+                else:
+                    mu=self.MU[k]
+                    GAMMA[j,k]=alpha*self._multiNorm(x,mu,sigma)
                 
         gamaSUM = np.sum(GAMMA,axis=1)
         gamaSUM = gamaSUM.reshape((gamaSUM.size,1))
@@ -86,3 +95,15 @@ class GMM():
                 t2 = time.time()
                 print("\nEND TRAIN; USED TIME: %.2f s"%(t2-t1))
                 break
+                
+    def clusters(self):
+        assessment = pd.DataFrame(columns=["clusID","probability"])
+        for prob in self.GAMMA:
+            clusID = np.where(prob==np.max(prob))[0][0]
+            probability = prob[clusID]
+            assessment = assessment.append({"clusID":clusID,"probability":probability},ignore_index=True)
+            
+        assessment["clusID"] = assessment["clusID"].astype(int)
+        
+        return assessment
+        
